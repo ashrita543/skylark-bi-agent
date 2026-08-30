@@ -1,9 +1,23 @@
-streamlit==1.28.1
+# Core runtime dependencies - pinned for Streamlit Cloud deployment with Python 3.12
+# All versions have pre-built wheels and are known to be compatible with Python 3.12
+
+# UI Framework
+streamlit>=1.40.0
+
+# HTTP client (for Monday.com GraphQL API)
 requests==2.31.0
-pandas==2.1.3
+
+# Data processing (pandas 2.2.3+ has Python 3.12 wheels; we use >=2.2.3 for flexibility)
+pandas>=2.2.3
+
+# Environment configuration (loads .env files for local development and Streamlit secrets)
 python-dotenv==1.0.0
-openai==1.3.5
-pytest==7.4.3
-pytest-cov==4.1.0
-pytest-mock==3.12.0
-openpyxl==3.11.0
+
+# OpenAI integration (optional; configured but not required for basic functionality)
+# Keeping this for future LLM features. If not used, can be removed.
+openai>=1.3.5
+
+# Testing dependencies (used locally and in CI/CD; NOT deployed to Streamlit Cloud)
+pytest>=7.4.3
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
