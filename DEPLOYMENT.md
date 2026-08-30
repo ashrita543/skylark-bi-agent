@@ -79,7 +79,7 @@ If you haven't already:
 3. Select:
    - **Repository**: your GitHub repo
    - **Branch**: `main`
-   - **Main file path**: `app/main.py`
+   - **Main file path**: `main.py`
 4. Click **Deploy**
 
 The app will deploy. You'll see a URL like:
@@ -163,7 +163,7 @@ To test locally before deploying:
 
 2. Run:
    ```bash
-   streamlit run app/main.py
+   streamlit run main.py
    ```
 
 3. Open http://localhost:8501
