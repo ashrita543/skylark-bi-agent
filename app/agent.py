@@ -22,11 +22,13 @@ class Agent:
         self.monday_client = monday_client or MondayClient()
         self.deals_cache: Optional[List[Dict[str, Any]]] = None
         self.work_orders_cache: Optional[List[Dict[str, Any]]] = None
+        self.deals_data_quality_issues: List[str] = []
+        self.work_orders_data_quality_issues: List[str] = []
         self.data_quality_issues: List[str] = []
 
     def fetch_and_normalize_deals(self, force_refresh: bool = False) -> Tuple[List[Dict[str, Any]], List[str]]:
         if self.deals_cache is not None and not force_refresh:
-            return self.deals_cache, self.data_quality_issues
+            return self.deals_cache, self.deals_data_quality_issues
 
         issues: List[str] = []
         try:
@@ -37,7 +39,8 @@ class Agent:
             items = self.monday_client.get_board_items(board_id)
             if not items:
                 self.deals_cache = []
-                return [], ["No deals found in the configured Deals board."]
+                self.deals_data_quality_issues = ["No deals found in the configured Deals board."]
+                return [], self.deals_data_quality_issues
 
             columns = self.monday_client.get_board_columns(board_id)
             column_mapping = {col["id"]: col["title"] for col in columns}
@@ -71,7 +74,8 @@ class Agent:
                 issues.append(f"{missing_count} deals have missing or unrecognized sector values.")
 
             self.deals_cache = normalized
-            self.data_quality_issues = issues
+            self.deals_data_quality_issues = issues
+            self.data_quality_issues = self.deals_data_quality_issues + self.work_orders_data_quality_issues
             return normalized, issues
         except MondayAPIError as exc:
             logger.error("Deals fetch failed: %s", exc)
@@ -79,7 +83,7 @@ class Agent:
 
     def fetch_and_normalize_work_orders(self, force_refresh: bool = False) -> Tuple[List[Dict[str, Any]], List[str]]:
         if self.work_orders_cache is not None and not force_refresh:
-            return self.work_orders_cache, self.data_quality_issues
+            return self.work_orders_cache, self.work_orders_data_quality_issues
 
         issues: List[str] = []
         try:
@@ -90,7 +94,8 @@ class Agent:
             items = self.monday_client.get_board_items(board_id)
             if not items:
                 self.work_orders_cache = []
-                return [], ["No work orders found in the configured Work Orders board."]
+                self.work_orders_data_quality_issues = ["No work orders found in the configured Work Orders board."]
+                return [], self.work_orders_data_quality_issues
 
             columns = self.monday_client.get_board_columns(board_id)
             column_mapping = {col["id"]: col["title"] for col in columns}
@@ -130,7 +135,8 @@ class Agent:
                 issues.append(f"{missing_count} work orders are missing billed values.")
 
             self.work_orders_cache = normalized
-            self.data_quality_issues = issues
+            self.work_orders_data_quality_issues = issues
+            self.data_quality_issues = self.deals_data_quality_issues + self.work_orders_data_quality_issues
             return normalized, issues
         except MondayAPIError as exc:
             logger.error("Work orders fetch failed: %s", exc)
